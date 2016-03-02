@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+ <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,minimal-ui" /> <!-- Not quite sure what this does... !-->
+    <style type="text/css">
+        #canvas {
+            display: block;
+            margin: auto;
+        }
+        #back {
+            font-size: 100%;
+            position: absolute;
+            top: 80%;
+            left: 5%;
+            background-color: white;
+            color: black;
+            text-decoration: none;
+        }
+        body {
+            background-color: white;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>Generation 4</title>
+    <script src="jquery.js"></script>
+</head>
+
+<body>
+    <p id='back'>Back</p>
+    <canvas id="canvas" width='480' height='320'></canvas>
+
+
+<script>
+function Object(xpos, ypos, xspeed, yspeed, color, size, isDroplet, spawningBubbles, type) {
+    this.xpos = xpos;
+    this.ypos = ypos;
+    this.xspeed = xspeed;
+    this.yspeed = yspeed;
+    this.color = color;
+    this.size = size;
+    this.isDroplet = isDroplet;
+    this.splashed = false;
+    this.updating = true;
+    this.spawningBubbles = spawningBubbles;
+    this.objectSpawnCounter = 0;
+    this.type = type // "circle" or "rect"
+    this.bubbles = [];
+
+    this.move = function() {
+        this.xpos += this.xspeed;
+        this.ypos += this.yspeed;
+        if (!this.splashed && this.type != "circle") {
+            this.yspeed += 1;
+        }
+        if (this.isDroplet) {
+            this.yspeed += 2; 
+            if (this.xspeed < 0) {
+                this.xspeed -= 0.1;
+            }
+            else {
+                this.xspeed += 0.1;
+            }
+
+        }
+        if (this.ypos > c.height/2 && this.isDroplet) {this.updating = false;}
+    };
+
+    this.splash = function() {
+        if (!this.splashed && this.ypos > c.height/2 && !this.isDroplet && this.type != "circle") {
+            this.yspeed = 1;
+            this.splashed = true;
+            var xspeed = Math.floor(Math.random()*10+4-7);
+            var size = Math.floor(Math.random()*20+5);
+            var object1 = new Object(this.xpos, this.ypos, xspeed, -size, "rgba(0, 0, 0, 0.2)", size, true, false, "circle");
+            xspeed = Math.floor(Math.random()*10+4-7);
+            size = Math.floor(Math.random()*20+5);
+            var object2 = new Object(this.xpos, this.ypos, xspeed, -size, "rgba(0, 0, 0, 0.2)", size, true, false, "circle");
+            var xspeed = Math.floor(Math.random()*10+4-7);
+            var size = Math.floor(Math.random()*20+5);
+            var object3 = new Object(this.xpos, this.ypos, xspeed, -size, "rgba(0, 0, 0, 0.2)", size, true, false, "circle");
+            xspeed = Math.floor(Math.random()*10+4-7);
+            size = Math.floor(Math.random()*20+5);
+            var object4 = new Object(this.xpos, this.ypos, xspeed, -size, "rgba(0, 0, 0, 0.2)", size, true, false, "circle");
+            xspeed = Math.floor(Math.random()*10+4-7);
+            size = Math.floor(Math.random()*20+5);
+            var object5 = new Object(this.xpos, this.ypos, xspeed, -size, "rgba(0, 0, 0, 0.2)", size, true, false, "circle");
+            xspeed = Math.floor(Math.random()*10+4-7);
+            size = Math.floor(Math.random()*20+5);
+            var object6 = new Object(this.xpos, this.ypos, xspeed, -size, "rgba(0, 0, 0, 0.2)", size, true, false, "circle");
+            objects.push(object1, object2, object3, object4, object5, object6);
+        }
+    }
+    this.updateObjects = function() {
+        for (var i=0; i<this.bubbles.length; i++) {
+            this.bubbles[i].update();
+        }
+    }
+    this.spawnObjects = function() {
+        this.objectSpawnCounter ++;
+        if (this.objectSpawnCounter > 20) {
+            this.objectSpawnCounter = 0;
+            var adjustX = Math.floor(Math.random()*10-5);
+            var adjustY = Math.floor(Math.random()*5);
+            var size = Math.floor(Math.random()*3);
+            var sideAdjust = chooseBetween2(-10, this.size+10);
+            var bubble = new Object(this.xpos+sideAdjust+adjustX, this.ypos+this.size, 0, -5-adjustY, "rgba(240, 240, 240, 0.5)", size, false, false, "circle");
+            this.bubbles.push(bubble);
+        }
+    }
+    this.draw = function() {
+        ctx.beginPath();
+        ctx.strokeStyle = this.color;
+        ctx.fillStyle = this.color;
+        if (this.type == "circle") {ctx.arc(this.xpos,this.ypos,this.size,0,2*Math.PI); ctx.fill();}
+        else {ctx.fillRect(this.xpos,this.ypos,this.size, this.size); }
+        ctx.stroke();
+        ctx.closePath();
+    };
+    this.update = function() {
+        if (this.ypos < c.height && this.updating && this.ypos > -10) {
+            this.move();
+            this.draw();
+            this.splash();
+            if (this.spawningBubbles) {
+                this.updateObjects();
+                this.spawnObjects();
+            }
+        }
+    };
+}
+function fillPartOfScreen(color, startx, starty, endx, endy) {
+    ctx.fillStyle = color;
+    ctx.fillRect(startx,starty,endx,endy);
+    ctx.stroke();
+}
+
+function chooseBetween2(item1, item2) {
+    var tempRandom = Math.floor(Math.random()*10);
+    if (tempRandom < 5) {return item1; }
+    else if (tempRandom > 5) {return item2; }
+}
+function chooseBetween3(item1, item2, item3) {
+    var tempRandom = Math.floor(Math.random()*10);
+    if (tempRandom < 3) {return item1; }
+    else if (tempRandom < 6) {return item2; }
+    else {return item3; }
+}
+function chooseBetween4(item1, item2, item3, item4) {
+    var tempRandom = Math.floor(Math.random()*10);
+    if (tempRandom < 2.5) {return item3; }
+    else if (tempRandom < 5) {return item2; }
+    else if (tempRandom < 7.5) {return item1; }
+    else {return item4; }
+}
+function drawGradient() {
+    // Create gradient
+    var grd = ctx.createLinearGradient(0,0,0,c.height);
+    grd.addColorStop(0,"white");
+    grd.addColorStop(1,"black");
+    // Fill with gradient
+    ctx.fillStyle = grd;
+    ctx.fillRect(0,0,c.width,c.height);
+}
+function spawnObjects(x) {
+    //var x = Math.floor(Math.random()*c.width);
+    var object = new Object(x, 0, 0, 5, "rgba(0, 0, 0, 0.6)", 20, false, true, "rect");
+    objects.push(object);
+
+}
+function updateObjects() {
+    drawGradient();
+    fillPartOfScreen("rgba(240, 240, 240, 1)", 0, 0, c.width, c.height/2);
+    fillPartOfScreen("rgba(200, 200, 200, 0.3)", 0, c.height/2, c.width, c.height);
+    for (var i=0; i<objects.length; i++) {
+        objects[i].update();
+    }
+}
+function touchstart(e) {
+    e.preventDefault(); // stops scrolling
+
+    spawnObjects(e.targetTouches[0].pageX)
+
+    yPercentage = (e.targetTouches[0].pageY/window.innerHeight)*100
+    xPercentage = (e.targetTouches[0].pageX/window.innerWidth)*100
+    if (yPercentage>90 && xPercentage<15) {
+        window.location.href = '../index.html'
+    }
+
+}
+
+function setCanvasSize() {
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    c.width = w*0.9; // to prevent clipping
+    c.height = h*0.9;
+    console.log('width: '+w);
+    console.log('height: '+h);
+}
+function fillScreen(color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(0,0,c.width,c.height);
+    ctx.stroke();
+}
+var c = document.getElementById("canvas");
+setCanvasSize()
+var ctx = c.getContext("2d");
+var objects = []
+//int=setInterval(function(){spawnObjects()}, 2000);   
+int=setInterval(function(){updateObjects()}, 50);   
+window.addEventListener("touchstart", touchstart, false);  //touchstart, touchend, touchmove
+</script>
+</body>
+
+</html>

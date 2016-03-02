@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+ <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,minimal-ui" /> <!-- Not quite sure what this does... !-->
+    <style type="text/css">
+        #canvas {
+            widths: 100%;
+            heights: 100%;
+            display: block;
+            margin: auto;
+        }
+        #back {
+            font-size: 100%;
+            position: absolute;
+            top: 80%;
+            left: 5%;
+            background-color: white;
+            color: black;
+            text-decoration: none;
+        }
+        body {
+            background-color: white;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>Generation 5</title>
+    <script src="jquery.js"></script>
+</head>
+
+<body>
+    <p id='back'>Back</p>
+    <canvas id="canvas" width='480' height='320'></canvas>
+
+
+<script>
+function Object(xpos, ypos, xspeed, yspeed, color, size) {
+    this.xpos = xpos;
+    this.ypos = ypos;
+    this.xspeed = xspeed;
+    this.yspeed = yspeed;
+    this.color = color;
+    this.size = size;
+
+    this.move = function() {
+        this.xpos += this.xspeed;
+        this.ypos += this.yspeed;
+    };
+
+    this.draw = function() {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.xpos,this.ypos,this.size, this.size);
+        ctx.stroke();
+    };
+    this.update = function() { 
+        this.move();
+        this.draw();
+    };
+}
+
+function chooseBetween2(item1, item2) {
+    var tempRandom = Math.floor(Math.random()*10);
+    if (tempRandom < 5) {return item1; }
+    else if (tempRandom > 5) {return item2; }
+}
+function chooseBetween3(item1, item2, item3) {
+    var tempRandom = Math.floor(Math.random()*10);
+    if (tempRandom < 3) {return item1; }
+    else if (tempRandom < 6) {return item2; }
+    else {return item3; }
+}
+function chooseBetween4(item1, item2, item3, item4) {
+    var tempRandom = Math.floor(Math.random()*10);
+    if (tempRandom < 2.5) {return item3; }
+    else if (tempRandom < 5) {return item2; }
+    else if (tempRandom < 7.5) {return item1; }
+    else {return item4; }
+}
+function spawnObjects() {
+    ypos += 20;
+    if (direction == 0) {var object = new Object(xpos, ypos, 15, 15, "black", 10); direction = 1;}
+    else if (direction == 1) {var object = new Object(500+xpos, ypos, -15, -15, "black", 10); direction = 0;}
+    
+    var int=setInterval(function() {object.update(); } , 100);
+
+    if (ypos > c.height*1.85) {
+        ypos = 0; 
+        xpos += 10;
+        clearInterval(metaSpawnInts[0]);
+        metaSpawnInts.shift();
+        if (xpos > c.width/2) {window.location.href=window.location.href;}
+    }
+}
+function metaSpawn() {
+    var metaSpawnInt=setInterval(function(){spawnObjects()}, 100);
+    metaSpawnInts.push(metaSpawnInt)
+}
+function touchstart(e) {
+    e.preventDefault(); // stops scrolling
+    for (var i = 0; i < e.targetTouches.length; i++) {
+        //usage: e.targetTouches[i].pageX, e.targetTouches[i].pageY
+    }
+    yPercentage = (e.targetTouches[0].pageY/window.innerHeight)*100
+    xPercentage = (e.targetTouches[0].pageX/window.innerWidth)*100
+    if (yPercentage>90 && xPercentage<15) {
+        window.location.href = '../index.html'
+    }
+    metaSpawn();
+}
+
+function setCanvasSize() {
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    c.width = w*0.9; // to prevent clipping
+    c.height = h*0.9;
+    console.log('width: '+w);
+    console.log('height: '+h);
+}
+function fillScreen(color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(0,0,c.width,c.height);
+    ctx.stroke();
+}
+   
+   
+var c = document.getElementById("canvas");
+setCanvasSize();
+var ctx = c.getContext("2d");
+var objects = []
+var metaSpawnInts = [];
+var direction = 0; // 0 or 1
+var ypos = 0;
+var xpos = 0;
+window.addEventListener("touchstart", touchstart, false);  //touchstart, touchend, touchmove
+</script>
+</body>
+
+</html>

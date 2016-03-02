@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+ <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,minimal-ui" /> <!-- Not quite sure what this does... !-->
+    <style type="text/css">
+        #canvas {
+            widths: 100%;
+            heights: 100%;
+            display: block;
+            margin: auto;
+        }
+        #back {
+            font-size: 100%;
+            position: absolute;
+            top: 80%;
+            left: 5%;
+            background-color: white;
+            color: black;
+            text-decoration: none;
+        }
+        body {
+            background-color: black;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>Generation 2</title>
+    <script src="jquery.js"></script>
+</head>
+
+<body>
+    <p id='back'>Back</p>
+    <canvas id="canvas" width='480' height='320'></canvas>
+
+
+<script>
+function Object(xpos, ypos, xspeed, yspeed, color, size, type) {
+    this.xpos = xpos;
+    this.ypos = ypos;
+    this.xspeed = xspeed;
+    this.yspeed = yspeed;
+    this.color = color;
+    this.size = size;
+    this.exploding = false;
+    this.type = type;
+
+    this.move = function() {
+        if (this.exploding) {
+            this.xpos += this.xspeed;
+            this.ypos += this.yspeed;
+            this.size += 1;
+            this.xspeed *= 1.1;
+            this.yspeed *= 1.1;
+        }
+        else {
+            this.xpos += Math.floor(Math.random()*6-3);
+            this.ypos += Math.floor(Math.random()*6-3);
+        }
+    };
+
+    this.draw = function() {
+        if (this.type == "rect") { 
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.xpos,this.ypos,this.size, this.size);
+            ctx.stroke();
+        }
+        else if (this.type == "circle") {
+            ctx.beginPath();
+            ctx.fillStyle = this.color;
+            ctx.strokeStyle = this.color;
+            ctx.arc(this.xpos,this.ypos-(this.size/1.5),this.size,0,2*Math.PI);
+            ctx.fill();
+            ctx.closePath();
+            ctx.stroke();
+        }
+    };
+    this.update = function() {
+        if (this.ypos < c.height && this.ypos > 0 && this.xpos < c.width && this.xpos > 0) {   
+            this.move();
+            this.draw();
+        }
+    };
+    }
+
+    function Explosion(xpos, ypos, type) {
+    this.xpos = xpos;
+    this.ypos = ypos;
+    this.exploding = false;
+    this.objects = [];
+    this.shadeAmount = 0;
+    this.type = type;
+    this.updating = true;
+    this.exploding_counter =0;
+
+    this.update = function() {
+        var xspeed = Math.floor(Math.random()*50-25);
+        var yspeed = Math.floor(Math.random()*50-25);
+        var size = Math.floor(Math.random()*10+5);
+        var color = "rgb("+this.shadeAmount+","+this.shadeAmount+","+this.shadeAmount+")";
+
+        if (!this.exploding) { 
+            if (this.shadeAmount < 250) {this.shadeAmount += 10; }
+            var object = new Object(this.xpos, this.ypos, xspeed, yspeed, color, size, type);
+            var object2 = new Object(this.xpos, this.ypos, xspeed, yspeed, color, size, type);
+            var object3 = new Object(this.xpos, this.ypos, xspeed, yspeed, color, size, type);
+            this.objects.push(object);
+            this.objects.push(object2);
+            this.objects.push(object3);
+
+            if (this.objects.length > 100) {
+                this.explodeObjects();
+            }
+        }
+        else {
+            this.exploding_counter ++;
+
+            if (this.exploding_counter >= 30) {
+                this.updating = false;
+            }
+        }
+    }
+    this.explodeObjects = function() {
+        for (var i=0; i<this.objects.length; i++) {
+            this.objects[i].exploding = true;;
+        }
+        this.exploding = true;
+    }
+    this.updateObjects = function() {
+        for (var i=0; i<this.objects.length; i++) {
+            this.objects[i].update();
+        }
+    }
+    }
+
+    function chooseBetween2(item1, item2) {
+    var tempRandom = Math.floor(Math.random()*10);
+    if (tempRandom < 5) {return item1; }
+    else if (tempRandom > 5) {return item2; }
+    }
+    function chooseBetween3(item1, item2, item3) {
+    var tempRandom = Math.floor(Math.random()*10);
+    if (tempRandom < 3) {return item1; }
+    else if (tempRandom < 6) {return item2; }
+    else {return item3; }
+    }
+    function chooseBetween4(item1, item2, item3, item4) {
+    var tempRandom = Math.floor(Math.random()*10);
+    if (tempRandom < 2.5) {return item3; }
+    else if (tempRandom < 5) {return item2; }
+    else if (tempRandom < 7.5) {return item1; }
+    else {return item4; }
+    }
+    function spawnExplosions(x,y) {
+    var type = chooseBetween2("rect", "circle");
+    var explosion = new Explosion(x, y, type);
+    explosions.push(explosion);
+    }
+    function updateExplosions() {
+    fillScreen("rgba(0, 0, 0, 0.2)");
+    for (var i=0; i<explosions.length; i++) {
+        if (explosions[i].updating) { 
+            explosions[i].update();
+            explosions[i].updateObjects();
+        }
+    }
+}
+function touchstart(e) {
+    e.preventDefault(); // stops scrolling
+    for (var i = 0; i < e.targetTouches.length; i++) {
+        //usage: e.targetTouches[i].pageX, e.targetTouches[i].pageY
+        x = e.targetTouches[i].pageX
+        y = e.targetTouches[i].pageY
+        spawnExplosions(x,y)
+    }
+    yPercentage = (e.targetTouches[0].pageY/window.innerHeight)*100
+    xPercentage = (e.targetTouches[0].pageX/window.innerWidth)*100
+    if (yPercentage>90 && xPercentage<15) {
+        window.location.href = '../index.html'
+    }
+}
+
+function setCanvasSize() {
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    c.width = w*0.9; // to prevent clipping
+    c.height = h*0.9;
+    console.log('width: '+w);
+    console.log('height: '+h);
+}
+function fillScreen(color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(0,0,c.width,c.height);
+    ctx.stroke();
+}
+   
+var c = document.getElementById("canvas");
+setCanvasSize()
+var ctx = c.getContext("2d");
+var explosions = []
+var exploding = false;
+var exploding_counter = 0;
+var shadeAmount = 0;
+var type = "circle";
+int=setInterval(function(){updateExplosions()}, 50);    
+fillScreen("black");
+window.addEventListener("touchstart", touchstart, false);  //touchstart, touchend, touchmove
+</script>
+</body>
+
+</html>

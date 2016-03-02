@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+ <head>
+    <style type="text/css">
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #back {
+            font-size: 300%;
+            position: absolute;
+            top: 80%;
+            left: 5%;
+            background-color: white;
+            color: black;
+            text-decoration: none;
+        }
+        body {
+            background-color: black;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>Generation 1</title>
+    <script src="jquery.js"></script>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+    <p id='back'>Back</p>
+
+<script>
+function Object(xpos, ypos, xspeed, color, size, changePower, curveHeight, direction) {
+    this.xpos = xpos;
+    this.ypos = ypos;
+    this.xspeed = xspeed;
+    this.yspeed = 0;
+    this.color = color;
+    this.size = size;
+    this.changePower = changePower;
+    this.height = curveHeight;
+    this.direction = direction;
+    this.startY = ypos;
+
+    this.move = function() {
+        this.xpos += this.xspeed;
+        this.ypos += this.yspeed;
+        
+        if (this.direction == "up") {
+            if (this.startY-this.ypos > this.height) {this.direction = "down";}
+            this.yspeed -= this.changePower;
+        }
+        else if (this.direction == "down") {
+            if (this.ypos-this.startY > this.height) {this.direction = "up";}
+            this.yspeed += this.changePower;
+        }
+    };
+
+    this.draw = function() {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.xpos,this.ypos,this.size, this.size);
+        ctx.stroke();
+    };
+    this.update = function() { 
+        if (this.ypos < c.height && this.ypos > 0 && this.xpos < c.width && this.xpos > 0) {  
+            this.draw();
+            this.move();
+        }
+    };
+}
+
+function fillScreen(color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(0,0,c.width,c.height);
+    ctx.stroke();
+}
+
+function spawnObjects() {
+    if (spawning) {
+        if (direction == "up") {direction = "down";}
+        else {direction = "up";}
+        var object = new Object(c.width/2, ypos, 5, "rgba(204, 153, 0, 1)", 10, curveChangePower, curveHeight, direction);
+        var object1 = new Object(c.width/2, ypos, -5, "rgba(204, 153, 0, 1)", 10, curveChangePower, curveHeight, direction);
+        objects.push(object, object1);
+        //if (curveChangePower!=1)  {curveChangePower += 1; }
+        //else {curveHeight += 3;}
+        
+        //if (objects.length > 200) {
+        //    if (curveHeight != 1) {objects = []; curveHeight = 1; curveChangePower = 2;}
+        //    else if (curveChangePower != 1) {objects = []; curveHeight = 2; curveChangePower = 1;}
+        //}
+    }
+}
+function updateObjects() {
+    fillScreen("rgba(0, 0, 0, 0.1)");
+    for (var i=0; i<objects.length; i++) {
+        objects[i].update();
+    }
+}
+
+function touchstart(e) {
+    e.preventDefault(); // stops scrolling
+    //for (var i = 0; i < e.targetTouches.length; i++) {
+        //usage: e.targetTouches[i].pageX, e.targetTouches[i].pageY
+    //}
+    spawning = true;
+    
+    yPercentage = (e.targetTouches[0].pageY/window.innerHeight)*100
+    xPercentage = (e.targetTouches[0].pageX/window.innerWidth)*100
+    if (yPercentage>90 && xPercentage<15) {
+        window.location.href = '../index.html'
+    }
+}
+function touchend(e) {
+    e.preventDefault(); // stops scrolling
+    //for (var i = 0; i < e.targetTouches.length; i++) {
+        //usage: e.targetTouches[i].pageX, e.targetTouches[i].pageY
+    //}
+    spawning = false;
+}
+function touchmove(e) {
+  e.preventDefault();
+  var touches = e.changedTouches;
+  if (touches.length != 0) {
+      x = touches[0].pageX;
+      curveHeight = 10*(x/c.height)
+  }
+}
+function setCanvasSize() {
+    //var w = window.innerWidth;
+    //var h = window.innerHeight;
+    var w = $(window).width();
+    var h = $(window).height();
+    c.width = w;
+    c.height = h;
+    console.log('width: '+w);
+    console.log('height: '+h);
+}
+
+var c = document.getElementById("canvas");
+var ctx = c.getContext("2d");
+setCanvasSize()
+var objects = []
+var counter = 0;
+var curveHeight = 1;
+var direction = "up";
+var curveChangePower = 1;
+var ypos = c.height/2;
+var spawning = true;
+int=setInterval(function(){updateObjects()}, 50);   
+int=setInterval(function(){spawnObjects()}, 50);   
+window.addEventListener("touchstart", touchstart, false);  //touchstart, touchend, touchmove
+window.addEventListener("touchend", touchend, false); 
+window.addEventListener("touchmove", touchmove, false); 
+fillScreen("black");
+</script>
+</body>
+
+</html>

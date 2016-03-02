@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+ <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,minimal-ui" /> <!-- Not quite sure what this does... !-->
+    <style type="text/css">
+        #canvas {
+            widths: 100%;
+            heights: 100%;
+            display: block;
+            margin: auto;
+        }
+        #back {
+            font-size: 100%;
+            position: absolute;
+            top: 80%;
+            left: 5%;
+            background-color: white;
+            color: black;
+            text-decoration: none;
+        }
+        body {
+            background-color: white;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>Generation 5</title>
+    <script src="jquery.js"></script>
+</head>
+
+<body>
+    <p id='back'>Back</p>
+    <canvas id="canvas" width='480' height='320'></canvas>
+
+
+<script>
+function Object(xpos, ypos, xspeed, yspeed, color, size, arcValue, direction) {
+    this.xpos = xpos;
+    this.ypos = ypos;
+    this.xspeed = xspeed;
+    this.yspeed = yspeed;
+    this.color = color;
+    this.size = size;
+    this.arcValue = arcValue;
+    this.direction = direction;
+
+    this.move = function() {
+        this.xpos += this.xspeed;
+        this.ypos += this.yspeed;
+        if (this.direction == "right") {this.arcValue += 0.1 }
+        else if (this.direction == "left") {this.arcValue -= 0.1 }
+        if (this.arcValue > 360) {this.arcValue = 0;}
+        if (this.arcValue < -360) {this.arcValue = 0;}
+    };
+
+    this.draw = function() {
+        ctx.beginPath();
+        ctx.arc(this.xpos,this.ypos,this.size,this.arcValue,this.arcValue+width);
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 200;
+        ctx.closePath()
+        ctx.stroke();
+    };
+    this.update = function() { 
+        this.move();
+        this.draw();
+    };
+}
+
+function chooseBetween2(item1, item2) {
+    var tempRandom = Math.floor(Math.random()*10);
+    if (tempRandom < 5) {return item1; }
+    else if (tempRandom > 5) {return item2; }
+}
+function chooseBetween3(item1, item2, item3) {
+    var tempRandom = Math.floor(Math.random()*10);
+    if (tempRandom < 3) {return item1; }
+    else if (tempRandom < 6) {return item2; }
+    else {return item3; }
+}
+function chooseBetween4(item1, item2, item3, item4) {
+    var tempRandom = Math.floor(Math.random()*10);
+    if (tempRandom < 2.5) {return item3; }
+    else if (tempRandom < 5) {return item2; }
+    else if (tempRandom < 7.5) {return item1; }
+    else {return item4; }
+}
+function spawnObjects() {
+    if (direction == "left") {direction = "right"; }
+    else if (direction == "right") {direction = "left"; }
+    var object = new Object(c.width/2, c.height/2, 0, 0, "rgba(100, 100, 100, 0.5)", 0.1*c.height, 0, direction);
+    objects.push(object);
+}
+function drawCircle() {
+    ctx.beginPath();
+    ctx.arc(c.width/2, c.height/2, 20, 0, 2 * Math.PI);
+    ctx.fillStyle = 'rgb(255,255,255)';
+    ctx.strokeStyle = 'rgb(255,255,255)';
+    ctx.fill();
+    ctx.closePath();
+
+}
+function updateObjects() {
+
+    fillScreen("rgb(+"+background_color_value+","+background_color_value+","+background_color_value+")");
+    for (var i=0; i<objects.length;i++) {
+        objects[i].update();
+
+    }
+    drawCircle();
+}
+
+function touchstart(e) {
+    e.preventDefault(); // stops scrolling
+    for (var i = 0; i < e.targetTouches.length; i++) {
+        //usage: e.targetTouches[i].pageX, e.targetTouches[i].pageY
+    }
+    yPercentage = (e.targetTouches[0].pageY/window.innerHeight)*100
+    xPercentage = (e.targetTouches[0].pageX/window.innerWidth)*100
+    if (yPercentage>90 && xPercentage<15) {
+        window.location.href = '../index.html'
+    }
+    width = (xPercentage/100)*0.3
+    spawnObjects();
+}
+
+function setCanvasSize() {
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    c.width = w*0.9; // to prevent clipping
+    c.height = h*0.9;
+    console.log('width: '+w);
+    console.log('height: '+h);
+}
+function fillScreen(color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(0,0,c.width,c.height);
+    ctx.stroke();
+}
+   
+var c = document.getElementById("canvas");
+var ctx = c.getContext("2d");
+setCanvasSize();
+var objects = []
+var direction = "right";
+var background_color_value = 255;
+var width = 0.3;
+//int=setInterval(function(){spawnObjects()}, 1000);  
+int=setInterval(function(){updateObjects()}, 50);   
+window.addEventListener("touchstart", touchstart, false);  //touchstart, touchend, touchmove
+spawnObjects();
+</script>
+</body>
+
+</html>

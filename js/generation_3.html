@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+ <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,minimal-ui" /> <!-- Not quite sure what this does... !-->
+    <style type="text/css">
+        #canvas {
+            display: block;
+            margin: auto;
+        }
+        #back {
+            font-size: 100%;
+            position: absolute;
+            top: 80%;
+            left: 5%;
+            background-color: white;
+            color: black;
+            text-decoration: none;
+        }
+        body {
+            background-color: white;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>Generation 3</title>
+    <script src="jquery.js"></script>
+</head>
+
+<body>
+    <p id='back'>Back</p>
+    <canvas id="canvas" width='480' height='320'></canvas>
+
+
+<script>
+function Object(xpos, ypos, xspeed, yspeed, color, size) {
+    this.xpos = xpos;
+    this.ypos = ypos;
+    this.xspeed = xspeed;
+    this.yspeed = yspeed;
+    this.color = color;
+    this.size = size;
+    this.stopYPos = Math.floor(Math.random()*50);
+
+    this.move = function() {
+        this.xpos += this.xspeed;
+        this.ypos += this.yspeed;
+        this.xpos += Math.floor(Math.random()*7)-3;
+        if (this.size>1) {this.size -= 0.3; }
+    };
+
+    this.spawnBranch = function() {
+        var tempRandom = Math.floor(Math.random()*(this.size-(this.size/8)+3 ) );
+        if (tempRandom == 1) {
+            var x = Math.floor(Math.random()*10-5);
+            var y = -Math.floor(Math.random()*5+2);
+            var object = new Object(this.xpos, this.ypos, x, y, "black", this.size);
+            objects.push(object);
+        }
+    }
+
+    this.draw = function() {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.xpos,this.ypos,this.size, this.size);
+        ctx.stroke();
+    };
+    this.update = function() { 
+        if (this.ypos > this.stopYPos && this.size > 1) { 
+            this.move();
+            this.spawnBranch();
+            this.draw();
+        }
+    };
+}
+
+function chooseBetween2(item1, item2) {
+    var tempRandom = Math.floor(Math.random()*10);
+    if (tempRandom < 5) {return item1; }
+    else if (tempRandom > 5) {return item2; }
+}
+function chooseBetween3(item1, item2, item3) {
+    var tempRandom = Math.floor(Math.random()*10);
+    if (tempRandom < 3) {return item1; }
+    else if (tempRandom < 6) {return item2; }
+    else {return item3; }
+}
+function chooseBetween4(item1, item2, item3, item4) {
+    var tempRandom = Math.floor(Math.random()*10);
+    if (tempRandom < 2.5) {return item3; }
+    else if (tempRandom < 5) {return item2; }
+    else if (tempRandom < 7.5) {return item1; }
+    else {return item4; }
+}
+function spawnObjects(x) {
+    trees ++;
+    //var x = Math.floor(Math.random()*500);
+    var size = Math.floor(Math.random()*15+5)
+    var object = new Object(x, c.height*0.9, 0, -5, "black", size);
+    objects.push(object);
+    //if (trees > 1) {window.location.href = window.location.href;}
+}
+function updateObjects() {
+    date = new Date();
+    for (var i=0; i<objects.length; i++) {
+        objects[i].update();
+    }
+    if (date.getTime() - startTime > 6000) {spawnObjects(); startTime = date.getTime(); }
+}
+function touchstart(e) {
+    e.preventDefault(); // stops scrolling
+
+    spawnObjects(e.targetTouches[0].pageX)
+
+    yPercentage = (e.targetTouches[0].pageY/window.innerHeight)*100
+    xPercentage = (e.targetTouches[0].pageX/window.innerWidth)*100
+    if (yPercentage>90 && xPercentage<15) {
+        window.location.href = '../index.html'
+    }
+
+}
+
+function setCanvasSize() {
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    c.width = w*0.9; // to prevent clipping
+    c.height = h*0.9;
+    console.log('width: '+w);
+    console.log('height: '+h);
+}
+function fillScreen(color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(0,0,c.width,c.height);
+    ctx.stroke();
+}
+var c = document.getElementById("canvas");
+setCanvasSize()
+var ctx = c.getContext("2d");
+var objects = []
+var date = new Date();
+var startTime = date.getTime();
+var trees = 0;
+spawnObjects();
+int=setInterval(function(){updateObjects()}, 50);   
+window.addEventListener("touchstart", touchstart, false);  //touchstart, touchend, touchmove
+</script>
+</body>
+
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+ <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,minimal-ui" /> <!-- Not quite sure what this does... !-->
+    <style type="text/css">
+        #canvas {
+            display: block;
+            margin: auto;
+        }
+        #back {
+            font-size: 100%;
+            position: absolute;
+            top: 80%;
+            left: 5%;
+            background-color: white;
+            color: black;
+            text-decoration: none;
+        }
+        body {
+            background-color: black;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>Generation 2</title>
+    <script src="jquery.js"></script>
+</head>
+
+<body>
+    <p id='back'>Back</p>
+    <canvas id="canvas" width='480' height='320'></canvas>
+
+
+<script>
+function touchstart(e) {
+    e.preventDefault(); // stops scrolling
+    for (var i = 0; i < e.targetTouches.length; i++) {
+        //usage: e.targetTouches[i].pageX, e.targetTouches[i].pageY
+        x = e.targetTouches[i].pageX
+        y = e.targetTouches[i].pageY
+        spawnExplosions(x,y)
+    }
+    yPercentage = (e.targetTouches[0].pageY/window.innerHeight)*100
+    xPercentage = (e.targetTouches[0].pageX/window.innerWidth)*100
+    if (yPercentage>90 && xPercentage<15) {
+        window.location.href = '../index.html'
+    }
+}
+
+function setCanvasSize() {
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    c.width = w*0.9; // to prevent clipping
+    c.height = h*0.9;
+    console.log('width: '+w);
+    console.log('height: '+h);
+}
+function fillScreen(color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(0,0,c.width,c.height);
+    ctx.stroke();
+
+setCanvasSize()
+window.addEventListener("touchstart", touchstart, false);  //touchstart, touchend, touchmove
+window.addEventListener("touchend", touchend, false); 
+window.addEventListener("touchmove", touchmove, false); 
+</script>
+</body>
+
+</html>
